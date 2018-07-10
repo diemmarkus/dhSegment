@@ -20,7 +20,9 @@ if __name__ == '__main__':
 
 
     # diem: config
-    bp = '../../../basilis/'
+    #bp = '../../../basilis/'
+    bp = '../'
+
     modelnames = ['hw', 'mp', 'im']
 
     # I/O
@@ -32,33 +34,32 @@ if __name__ == '__main__':
     # Store coordinates of page in a .txt file
     txt_coordinates = ''
 
-    with tf.Session():  # Start a tensorflow session
+    models = list()
 
+    tuple_models = list()  # list of tuples containing (Session, Graph, Model) for each model
 
-        models = list()
+    # For each model to be loaded, create a new graph and session. Then load the model.
+    for mn in modelnames:
+        graph = tf.Graph()
+        session = tf.Session(graph=graph)
+        with session.as_default(), graph.as_default():  # This is the important line!
+            model = LoadedModel(bp + 'model/', mn, predict_mode='filename')
+        tuple_models.append((session, graph, model))
 
-        # # cache the models
-        # for mn in modelnames:
-        #     m = LoadedModel(bp + 'model/', mn, predict_mode='filename')
-        #     models.append(m)
-            
-        for filename in tqdm(input_files, desc='Processed files'):
-            
-            probList = list()
-            basename = os.path.basename(filename).split('.')[0]
+    for filename in tqdm(input_files, desc='Processed files'):
 
-            if os.path.exists(os.path.join(output_dir, basename + '-probs.png')):
-                print(basename + " skipped...")
+        probList = list()
+        basename = os.path.basename(filename).split('.')[0]
 
-            # for m in models:
-            for mn in modelnames:
+        if os.path.exists(os.path.join(output_dir, basename + '-probs.png')):
+            print(basename + " skipped...")
 
-                # TODO: I cannot cache models?!
-                # NOTE: here we loose an incredible amount of memory...
-                m = LoadedModel(bp + 'model/', mn, predict_mode='filename')
-                
-                # For each image, predict each pixel's label
-                prediction_outputs = m.predict(filename)
+        # For each image, predict each pixel's label
+        for sess, g, model in tuple_models:
+            # You need to call 'predict' method in the same Graph and Session 'environment' as you loaded it
+            with sess.as_default(), g.as_default():
+                #probs = model.predict(filename, prediction_key='probs')
+                prediction_outputs = model.predict(filename)
                 probs = prediction_outputs['probs'][0]
                 original_shape = prediction_outputs['original_shape']
                 probs = probs[:, :, 1]  # Take only class '1' (class 0 is the background)
@@ -66,10 +67,10 @@ if __name__ == '__main__':
 
                 probsN = probs / np.max(probs)  # Normalize to be in [0, 1]
 
-                imsave(os.path.join(output_dir, basename + '-' + m.name + '.png'), convert_image(probsN))
+                imsave(os.path.join(output_dir, basename + '-' + model.name + '.png'), convert_image(probsN))
 
-            oImg = np.dstack((probList[0], probList[1], probList[2]))  # stacks 3 h x w arrays -> h x w x 3
-            oImg = oImg / np.max(oImg)
-            
-            imsave(os.path.join(output_dir, basename + '-probs.png'), convert_image(oImg))
+        oImg = np.dstack((probList[0], probList[1], probList[2]))  # stacks 3 h x w arrays -> h x w x 3
+        oImg = oImg / np.max(oImg)
+
+        imsave(os.path.join(output_dir, basename + '-probs.png'), convert_image(oImg))
                        
