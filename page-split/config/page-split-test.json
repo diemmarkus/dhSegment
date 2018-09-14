@@ -1,0 +1,7 @@
+{
+  "modelDir" : "page-split/model/",
+  "modelName": "ps",
+  "testDir" : "page-split/pages/test/",
+  "outDir": "page-split/pages/results/",
+  "gpu" : "1"
+}

@@ -58,4 +58,35 @@ cd ..
 5. Run `python demo.py`
 6. Have a look at the results in `demo/processed_images`
 
+## Cheat Sheet Markus
 
+```console
+ source ~/READ/dh-env/bin/activate
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
+python test.py
+```
+
+training page split:
+```console
+ python train.py with ./data/config/page-split-config.json
+```
+
+test page split:
+```console
+ python test-page-split.py with ./data/config/page-split-test.json
+```
+
+## Create Page Split Database
+
+```cmd
+cd Benchmarking/lib/database
+REM make a flat copy of the labels (20000 == all)
+python cdb.py --ext "png" --flatcopy --copyto C:\read\cBAD\page-split\dataset2\labels C:\read\cBAD\page-split\versions\READ-ICDAR2017-cBAD-dataset-v3 20000
+REM make a flat copy of the images
+python cdb.py --ext "jpg" --flatcopy --copyto C:\read\cBAD\page-split\dataset2\images C:\read\cBAD\page-split\versions\READ-ICDAR2017-cBAD-dataset-v3 20000
+
+REM split the datasets (into train/eval/test)
+python split.py --train 0.33 --eval 0.33 C:\read\cBAD\page-split\dataset2\labels C:\read\cBAD\page-split\dataset2\labels-split
+python split.py --train 0.33 --eval 0.33 C:\read\cBAD\page-split\dataset2\images C:\read\cBAD\page-split\dataset2\images-split
+
+```
