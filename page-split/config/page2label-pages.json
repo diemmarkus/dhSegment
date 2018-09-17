@@ -1,0 +1,23 @@
+{
+  "Labels": [
+  {
+  "Class" : {
+    "id": 4,
+	"z-index": 2,
+    "name": "split",
+    "alias": ["SeparatorRegion"],
+    "color": "#f49b42"
+  }},
+  {
+    "Class": {
+      "id": 3,
+      "name": "page",
+	  "z-index": 1,
+      "alias": [
+        "Border"
+      ],
+      "color": "#8fd3b2"
+    }
+  }
+  ]
+}

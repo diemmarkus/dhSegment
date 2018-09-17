@@ -1,0 +1,11 @@
+{
+  "Labels": [
+  {
+  "Class" : {
+    "id": 4,
+    "name": "split",
+    "alias": ["SeparatorRegion"],
+    "color": "#f49b42"
+  }}
+  ]
+}
