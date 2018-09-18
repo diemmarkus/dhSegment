@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 import math
-from shapely import geometry
+# from shapely import geometry
 
 
 def find_polygonal_regions(image_mask: np.ndarray, min_area: float=0.1, n_max_polygons: int=math.inf):
@@ -24,11 +24,15 @@ def find_polygonal_regions(image_mask: np.ndarray, min_area: float=0.1, n_max_po
     found_polygons = list()
 
     for c in contours:
-        polygon = geometry.Polygon([point[0] for point in c])
+
+        area = cv2.contourArea(c)
+        # polygon = geometry.Polygon([point[0] for point in c])
+        # area = polygon_area(c.T[0], c.T[1])
+
         # Check that polygon has area greater than minimal area
-        if polygon.area >= min_area*np.prod(image_mask.shape[:2]):
+        if area >= min_area*np.prod(image_mask.shape[:2]):
             found_polygons.append(
-                (np.array([point for point in polygon.exterior.coords], dtype=np.uint), polygon.area)
+                (np.array([point[0] for point in c]), area)
             )
 
     # sort by area
@@ -39,3 +43,44 @@ def find_polygonal_regions(image_mask: np.ndarray, min_area: float=0.1, n_max_po
         return [fp[0] for i, fp in enumerate(found_polygons) if i <= n_max_polygons]
     else:
         return None
+
+def fitLineToPoints(pts):
+    params = np.polyfit(pts[1], pts[0], 1)
+
+    miy = min(pts[1])
+    may = max(pts[1])
+
+    l = DkLine(params[0], params[1])
+    l.setDefaults(np.array([miy, may], dtype=float))
+
+    return l
+
+
+class DkLine:
+
+    k = 0
+    d = 0
+    dx = np.array([])
+
+    def __init__(self, k, d):
+        self.k = k
+        self.d = d
+        self.dx = np.array([])
+
+    def setDefaults(self, x: np.array):
+        self.dx = x
+
+    def line(self, x: np.array = None):
+        
+        if x is None:
+            x = self.dx
+        
+        y = self.k*x + self.d
+        return [x, y]
+
+    def scale(self, sxy):
+        self.dx *= sxy
+        self.d *= sxy
+
+    def isEmpty(self):
+        return self.k == 0 & self.d == 0
