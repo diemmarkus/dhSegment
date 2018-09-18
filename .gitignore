@@ -14,9 +14,11 @@
 /demo/processed_images/
 /demo/model
 /demo/pages/classes.txt
+/pretrained_models
 
 # user specific folder
 /basilis
+/page-split
 
 # others
 .vscode
