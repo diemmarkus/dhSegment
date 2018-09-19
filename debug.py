@@ -6,7 +6,7 @@ import os
 import cv2
 from dh_segment.post_processing.utils import imgInfo, normalize
 from dh_segment.post_processing.binarization import threshold, bwClean
-from dh_segment.post_processing.detect_separators import findSeparators
+from dh_segment.post_processing.detect_elements import findSeparators, findPages
 from imageio import imread, imsave
 from sacred import Experiment
 import matplotlib.pyplot as plt
@@ -33,9 +33,14 @@ def run(imgPath, probPath, outDir, _config):
     prob = prob.astype(float)
     prob = prob / np.max(prob)
 
-    # binarize
+    # find separators
     sepP = prob[:,:,2]
     seps = findSeparators(sepP)
+
+    # find page
+    pg = prob[:,:,1]
+    
+
 
     # show separators
     plt.imshow(img)
@@ -43,6 +48,5 @@ def run(imgPath, probPath, outDir, _config):
     for s in seps:
         s.scale(img.shape[0]/prob.shape[0])
         plt.plot(s.line()[1], s.line()[0])
-
 
     print("tutu")
