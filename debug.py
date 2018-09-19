@@ -39,14 +39,21 @@ def run(imgPath, probPath, outDir, _config):
 
     # find page
     pg = prob[:,:,1]
-    
+    pgRects = findPages(pg, seps)
 
 
     # show separators
     plt.imshow(img)
 
+    sxy = img.shape[0]/prob.shape[0]
+
     for s in seps:
-        s.scale(img.shape[0]/prob.shape[0])
-        plt.plot(s.line()[1], s.line()[0])
+        s.scale(sxy)
+        l = s.lineCoords()
+        plt.plot(l[0], l[1])
+
+    for p in pgRects:
+        p.scale(sxy)
+        plt.plot(p.pts[:,0], p.pts[:,1])
 
     print("tutu")

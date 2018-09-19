@@ -50,37 +50,133 @@ def fitLineToPoints(pts):
     miy = min(pts[1])
     may = max(pts[1])
 
-    l = DkLine(params[0], params[1])
-    l.setDefaults(np.array([miy, may], dtype=float))
+    l = DkLine(params[0], params[1], True)
+    l.setDefaults(miy, may)
 
     return l
 
+class DkVector:
+
+    x = 0
+    y = 0
+
+    def __init__(self, x = 0, y = 0):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return "<Vector x:%.3f y:%.3f>" % self.coords()
+
+    def coords(self):
+        return (self.x, self.y)
+
+    def length(self):
+        """ Compute vector length """
+        return ((self.x ** 2) + (self.y ** 2)) ** 0.5
+    
+    def __imul__(self, o):
+        """ scalar multiplication """
+        self.x *= o
+        self.y *= o
+
+        return self
+
+    def swap(self):
+        xt = self.x
+        self.x = self.y
+        self.y = xt
 
 class DkLine:
 
     k = 0
     d = 0
-    dx = np.array([])
+    _p1 = DkVector()
+    _p2 = DkVector()
+    swapped = False
 
-    def __init__(self, k, d):
+    def __init__(self, k, d, swapped = False):
         self.k = k
         self.d = d
-        self.dx = np.array([])
+        self.swapped = swapped
 
-    def setDefaults(self, x: np.array):
-        self.dx = x
+    def setDefaults(self, x1: float, x2: float):
+        self._p1 = DkVector(x1, self.map(x1))
+        self._p2 = DkVector(x2, self.map(x2))
+        
+    def map(self, x):
+        return self.k*x + self.d
 
-    def line(self, x: np.array = None):
+    def lineCoords(self, xs = []):
         
-        if x is None:
-            x = self.dx
+        if not xs:
+            xs = [self._p1.x, self._p2.x]
         
-        y = self.k*x + self.d
-        return [x, y]
+        pts = np.ndarray(shape=(2, len(xs)), dtype=float)
+        ys = list()
+
+        for x in xs:
+            ys.append(self.map(x))
+        
+        return (xs, ys) if not self.swapped else (ys, xs)
+
+    def line(self, xs=[]):
+
+        l = self.lineCoords(xs)
+        return list(map(list, zip(*l)))
+
+    def lineCv(self, xs=[]):
+
+        l = self.lineCoords(xs)
+        l = list(map(list, zip(*l)))
+
+        lcv = list()
+        for v in l:
+            lcv.append(tuple((int(v[0]), int(v[1]))))
+
+        return lcv
 
     def scale(self, sxy):
-        self.dx *= sxy
+        
+        self._p1 = DkVector(self._p1.x*sxy, self.map(self._p1.x*sxy))
+        self._p2 = DkVector(self._p2.x*sxy, self.map(self._p2.x*sxy))
+
         self.d *= sxy
 
     def isEmpty(self):
         return self.k == 0 & self.d == 0
+
+    def maxSide(self, dimIdx: int = 0):
+
+        if dimIdx == 0:
+            return abs(self._p1.x-self._p2.x)
+        else:
+            return abs(self._p1.y-self._p2.y)
+
+class DkPoly:
+    
+    pts = np.ndarray([])
+
+    def __init__(self, pts: np.ndarray([]) = np.ndarray([])):
+        self.pts = pts
+
+    def maxSide(self, dimIdx: int = 0):
+
+        lp = []
+        md = 0
+
+        for p in self.pts[dimIdx]:
+
+            if lp:
+                d = abs(p-lp)
+                if d > md:
+                    md = d
+
+            lp = p
+
+        return md
+
+    def scale(self, sxy: float):
+
+        for p in self.pts:
+            p[0] *= sxy
+            p[1] *= sxy

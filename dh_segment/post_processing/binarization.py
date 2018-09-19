@@ -27,11 +27,14 @@ def threshold(probs: np.ndarray, threshold: float=-1) -> np.ndarray:
 
 def bwClean(mask: np.ndarray, size: int=5):
     
-    ksize_open = (size, size)
-    ksize_close = (size, size)
-    mask = cv2.morphologyEx(mask.astype(np.uint8, copy=True), cv2.MORPH_OPEN, kernel=np.ones(ksize_open))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel=np.ones(ksize_close))
-    return mask
+    ksize = (size, size)
+
+    bwC = mask.astype(np.uint8, copy=True)
+
+    bwC = cv2.morphologyEx(bwC, cv2.MORPH_OPEN, kernel=np.ones(ksize))
+    bwC = cv2.morphologyEx(bwC, cv2.MORPH_CLOSE, kernel=np.ones(ksize))
+
+    return bwC
 
 
 def hysteresis_thresholding(probs: np.array, low_threshold: float, high_threshold: float,
