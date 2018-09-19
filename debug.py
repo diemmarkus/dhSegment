@@ -7,9 +7,11 @@ import cv2
 from dh_segment.post_processing.utils import imgInfo, normalize
 from dh_segment.post_processing.binarization import threshold, bwClean
 from dh_segment.post_processing.detect_elements import findSeparators, findPages
+from dh_segment.post_processing.PAGE import Border, Page
 from imageio import imread, imsave
 from sacred import Experiment
 import matplotlib.pyplot as plt
+
 
 ex = Experiment('dhSegment_test')
 
@@ -55,5 +57,18 @@ def run(imgPath, probPath, outDir, _config):
     for p in pgRects:
         p.scale(sxy)
         plt.plot(p.pts[:,0], p.pts[:,1])
+
+    # border = [Border.from_array(coords=b, id='border_{}'.format(i)) for i, b in enumerate(pgRects))]
+
+    borders = list()
+
+    for i, p in enumerate(pgRects):
+        # borders.append(Border(coords=p, id='border_{}'.format(i)))
+        borders.append(Border(coords=p.toPointList()))
+        
+    pageXml = Page(page_borders = borders)
+    pageXml.write_to_file(os.path.join(outDir, 'page.xml'))
+
+    # TODO: add image dimensions!! & filename
 
     print("tutu")

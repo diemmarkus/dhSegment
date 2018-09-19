@@ -272,14 +272,14 @@ class Page(BaseElement):
 
     def __init__(self, image_filename: str=None, image_width: int=None, image_height: int=None,
                  text_regions: List[TextRegion]=None, graphic_regions: List[GraphicRegion]=None,
-                 page_border: Border=None, separator_regions: List[SeparatorRegion]=None,
+                 page_borders: List[Border]=None, separator_regions: List[SeparatorRegion]=None,
                  table_regions: List[TableRegion]=None):
         self.image_filename = image_filename
         self.image_width = _try_to_int(image_width)
         self.image_height = _try_to_int(image_height)
         self.text_regions = text_regions if text_regions is not None else []
         self.graphic_regions = graphic_regions if graphic_regions is not None else []
-        self.border = page_border if page_border is not None else []
+        self.borders = page_borders if page_borders is not None else []
         self.separator_regions = separator_regions if separator_regions is not None else []
         self.table_regions = table_regions if table_regions is not None else []
 
@@ -292,7 +292,7 @@ class Page(BaseElement):
             image_height=e.attrib.get('imageHeight'),
             text_regions=[TextRegion.from_xml(tr) for tr in e.findall('p:TextRegion', _ns)],
             graphic_regions=[GraphicRegion.from_xml(tr) for tr in e.findall('p:GraphicRegion', _ns)],
-            page_border=Border.from_xml(e.find('p:Border', _ns)),
+            page_borders=[Border.from_xml(br) for br in (e.findall('p:Border', _ns))],
             separator_regions=[SeparatorRegion.from_xml(sep) for sep in e.findall('p:SeparatorRegion', _ns)],
             table_regions=[TableRegion.from_xml(tr) for tr in e.findall('p:TableRegion', _ns)]
         )
@@ -304,7 +304,7 @@ class Page(BaseElement):
                     image_height=dictionary.get('image_height'),
                     text_regions=dictionary.get('text_regions'),
                     graphic_regions=dictionary.get('graphic_regions'),
-                    page_border=dictionary.get('page_border'),
+                    page_borders=dictionary.get('page_borders'),
                     separator_regions=dictionary.get('separator_regions'),
                     table_regions=dictionary.get('table_regions')
                     )
@@ -321,8 +321,8 @@ class Page(BaseElement):
             page_et.append(tr.to_xml())
         for gr in self.graphic_regions:
             page_et.append(gr.to_xml())
-        if self.border:
-            page_et.append(self.border.to_xml())
+        for b in self.borders:
+            page_et.append(b.to_xml())
         for sep in self.separator_regions:
             page_et.append(sep.to_xml())
         for tr in self.table_regions:
@@ -433,7 +433,7 @@ class Page(BaseElement):
         else:
             cv2.polylines(img_canvas, tr_coords, True, color, thickness=thickness)
 
-    def draw_page_border(self, img_canvas, color: Tuple[int, int, int]=(255, 0, 0), fill: bool=True,
+    def draw_page_borders(self, img_canvas, color: Tuple[int, int, int]=(255, 0, 0), fill: bool=True,
                          thickness: int=5, autoscale: bool=True):
         """
         Given an image, draws the page border, either fills it (fill=True) or draws the contours (fill=False)
@@ -453,8 +453,8 @@ class Page(BaseElement):
         else:
             ratio = (1, 1)
 
-        border_coords = (Point.list_to_cv2poly(self.border.coords) * ratio).astype(np.int32) \
-            if len(self.border.coords) > 0 else []
+        border_coords = (Point.list_to_cv2poly(self.borders.coords) * ratio).astype(np.int32) \
+            if len(self.borders.coords) > 0 else []
         if fill:
             cv2.fillPoly(img_canvas, [border_coords], color)
         else:

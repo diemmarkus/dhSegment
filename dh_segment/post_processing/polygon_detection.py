@@ -3,6 +3,8 @@
 import cv2
 import numpy as np
 import math
+from .PAGE import Point
+
 # from shapely import geometry
 
 
@@ -180,3 +182,12 @@ class DkPoly:
         for p in self.pts:
             p[0] *= sxy
             p[1] *= sxy
+
+    def toPointList(self):
+
+        pl = list()
+
+        for p in self.pts:
+            pl.append(Point(int(p[1]), int(p[0])))
+
+        return pl
