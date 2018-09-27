@@ -7,7 +7,7 @@ import cv2
 from dh_segment.post_processing.utils import imgInfo, normalize
 from dh_segment.post_processing.binarization import threshold, bwClean
 from dh_segment.post_processing.detect_elements import findSeparators, findPages
-from dh_segment.post_processing.PAGE import Border, Page
+from dh_segment.post_processing.PAGE import Border, Page, SeparatorRegion
 from imageio import imread, imsave
 from sacred import Experiment
 import matplotlib.pyplot as plt
@@ -65,10 +65,15 @@ def run(imgPath, probPath, outDir, _config):
     for i, p in enumerate(pgRects):
         # borders.append(Border(coords=p, id='border_{}'.format(i)))
         borders.append(Border(coords=p.toPointList()))
-        
-    pageXml = Page(page_borders = borders)
-    pageXml.write_to_file(os.path.join(outDir, 'page.xml'))
+    
+    separators = list()
+    for i, p in enumerate(seps):
+        separators.append(SeparatorRegion(coords=p.toPointList))
 
-    # TODO: add image dimensions!! & filename
+    fname = os.path.basename(imgPath)
+    bname = fname.split(".")[0]
 
-    print("tutu")
+    print(bname)
+
+    pageXml = Page(page_borders=borders, separator_regions=separators, image_width=img.shape[1], image_height=img.shape[0], image_filename=fname)
+    pageXml.write_to_file(os.path.join(outDir, bname + '.xml'))

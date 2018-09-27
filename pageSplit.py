@@ -2,6 +2,7 @@
 
 import tensorflow as tf
 from dh_segment.loader import LoadedModel
+from dh_segment.post_processing.detect_elements import pageSeparatorsToXml
 from tqdm import tqdm
 from glob import glob
 import numpy as np
@@ -48,16 +49,23 @@ def run(testDir, modelDir, modelName, outDir, _config):
 
             basename = os.path.basename(filename).split('.')[0]
 
-            if os.path.exists(os.path.join(outDir, basename + '-probs.png')):
+            if os.path.exists(os.path.join(outDir, basename + '.xml')):
                 print(basename + " skipped...")
 
             prediction_outputs = model.predict(filename)
+            
             probs = prediction_outputs['probs'][0]
-            original_shape = prediction_outputs['original_shape']
-            # Take only class '1' (class 0 is the background)
-            probs = probs[:, :, 1]
+            probs = probs.astype(float)
+            # probs = probs / np.max(probs)
+
+            imgPath = os.path.join(testDir, filename)
+
+            # print("loading:" + imgPath)
+            img = imread(imgPath)
+
+            pageSeparatorsToXml(probs, img.shape, filename, outDir)
 
             # probsN = probs / np.max(probs)  # Normalize to be in [0, 1]
 
-            imsave(os.path.join(outDir, basename + '-' +
-                   model.name + '.png'), convert_image(probs))
+            # imsave(os.path.join(outDir, basename + '-' +
+            #        model.name + '.png'), convert_image(probs))

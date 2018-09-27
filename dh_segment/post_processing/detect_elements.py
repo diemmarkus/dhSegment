@@ -1,8 +1,45 @@
 import numpy as np
 from .binarization import threshold, bwClean
 from .polygon_detection import find_polygonal_regions, fitLineToPoints, DkPoly, DkLine
-# from matplotlib import pyplot as plt
+from .PAGE import Border, Page
+
 import cv2
+import os
+
+# from matplotlib import pyplot as plt
+
+def pageSeparatorsToXml(prob: np.ndarray, imgShape: np.shape, imgFileName: str, outDir: str):
+
+    # find separators
+    sepP = prob[:, :, 2]
+    seps = findSeparators(sepP)
+
+    # find page
+    pg = prob[:, :, 1]
+    pgRects = findPages(pg, seps)
+
+    # scale back
+    sxy = imgShape[0]/prob.shape[0]
+
+    for s in seps:
+        s.scale(sxy)
+
+    for p in pgRects:
+        p.scale(sxy)
+
+    # prepare xml
+    borders = list()
+
+    for i, p in enumerate(pgRects):
+        borders.append(Border(coords=p.toPointList()))
+        
+    # write the xml
+    bname = imgFileName.split(".")[0]
+
+    pageXml = Page(page_borders = borders, image_width = imgShape[1], image_height = imgShape[0], image_filename = imgFileName)
+    pageXml.write_to_file(os.path.join(outDir, bname + '.xml'))
+
+
 
 def findSeparators(sepProb: np.ndarray):
 

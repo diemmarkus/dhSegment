@@ -1,7 +1,7 @@
 {
   "modelDir" : "page-split/model/",
-  "modelName": "ps",
-  "testDir" : "page-split/pages/test/",
+  "modelName": "pg",
+  "testDir" : "C:/coding/READ/3rd-party/dhSegment/page-split/pages/test",
   "outDir": "page-split/pages/results/",
   "gpu" : "1"
 }
