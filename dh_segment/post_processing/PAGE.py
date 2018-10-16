@@ -90,6 +90,14 @@ class Region(BaseElement):
             coords = ET.SubElement(et, 'Coords')
             coords.set('points', Point.list_point_to_string(self.coords))
         return et
+    
+    def from_str(self, coords: str) -> dict:
+        import uuid
+
+        rc = list(map(int, coords.split(',')))
+
+        return {'id': str(uuid.uuid5(uuid.NAMESPACE_DNS, 'python.org')),
+                'coords': rc}
 
 
 class TextLine(Region):
