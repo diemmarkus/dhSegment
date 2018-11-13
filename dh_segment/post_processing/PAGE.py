@@ -91,13 +91,29 @@ class Region(BaseElement):
             coords.set('points', Point.list_point_to_string(self.coords))
         return et
     
-    def from_str(self, coords: str) -> dict:
+    def from_rect_str(self, coords: str) -> dict:
         import uuid
 
         rc = list(map(int, coords.split(',')))
 
-        return {'id': str(uuid.uuid5(uuid.NAMESPACE_DNS, 'python.org')),
-                'coords': rc}
+        if len(rc) != 4:
+            print('illegal coordinate array:', coords)
+            return Region()
+        
+        id = str(uuid.uuid5(uuid.NAMESPACE_DNS, 'python.org'))
+
+        x = rc[1]
+        y = rc[0]
+        width = rc[3]
+        height = rc[2]
+
+        c = []
+        c.append(Point(x, y))
+        c.append(Point(x+width, y))
+        c.append(Point(x+width, y+height))
+        c.append(Point(x, y+height))
+
+        return Region(id, c)
 
 
 class TextLine(Region):
