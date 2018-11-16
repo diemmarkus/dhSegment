@@ -8,11 +8,13 @@ from imageio import imsave
 
 def threshold(probs: np.ndarray, threshold: float=-1) -> np.ndarray:
     """
-    Computes the binary mask of the detected Page from the probabilities outputed by network
+    Computes the binary mask of the detected Page from the probabilities output by network.
+
     :param probs: array in range [0, 1] of shape HxWx2
     :param threshold: threshold between [0 and 1], if negative Otsu's adaptive threshold will be used
     :return: binary mask
     """
+
     if threshold < 0:  # Otsu's thresholding
         probs = np.uint8(probs * 255)
         probsG = cv2.GaussianBlur(probs, (15, 15), 0)
@@ -35,10 +37,24 @@ def bwClean(mask: np.ndarray, size: int=5):
     bwC = cv2.morphologyEx(bwC, cv2.MORPH_CLOSE, kernel=np.ones(ksize))
 
     return bwC
+def cleaning_binary(mask: np.ndarray, kernel_size: int=5) -> np.ndarray:
+    """
+    Uses mathematical morphology to clean and remove small elements from binary images.
+
+    :param mask: the binary image to clean
+    :param kernel_size: size of the kernel
+    :return: the cleaned mask
+    """
+
+    ksize_open = (kernel_size, kernel_size)
+    ksize_close = (kernel_size, kernel_size)
+    mask = cv2.morphologyEx((mask.astype(np.uint8, copy=False) * 255), cv2.MORPH_OPEN, kernel=np.ones(ksize_open))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel=np.ones(ksize_close))
+    return mask / 255
 
 
 def hysteresis_thresholding(probs: np.array, low_threshold: float, high_threshold: float,
-                            candidates_mask: np.ndarray=None):
+                            candidates_mask: np.ndarray=None) -> np.ndarray:
     low_mask = probs > low_threshold
     if candidates_mask is not None:
         low_mask = candidates_mask & low_mask
@@ -51,7 +67,7 @@ def hysteresis_thresholding(probs: np.array, low_threshold: float, high_threshol
     return label_masks[label_components]
 
 
-def cleaning_probs(probs: np.ndarray, sigma: float):
+def cleaning_probs(probs: np.ndarray, sigma: float) -> np.ndarray:
     # Smooth
     if sigma > 0.:
         return cv2.GaussianBlur(probs, (int(3*sigma)*2+1, int(3*sigma)*2+1), sigma)

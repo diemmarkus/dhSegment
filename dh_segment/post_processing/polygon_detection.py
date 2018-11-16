@@ -8,9 +8,10 @@ from .PAGE import Point
 # from shapely import geometry
 
 
-def find_polygonal_regions(image_mask: np.ndarray, min_area: float=0.1, n_max_polygons: int=math.inf):
+def find_polygonal_regions(image_mask: np.ndarray, min_area: float=0.1, n_max_polygons: int=math.inf) -> list:
     """
-    Returns the coordinates of the shapes in a binary mask as polygons
+    Finds the shapes in a binary mask and returns their coordinates as polygons.
+
     :param image_mask: Uint8 binary 2D array
     :param min_area: minimum area the polygon should have in order to be considered as valid
                 (value within [0,1] representing a percent of the total size of the image)

@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 import tensorflow as tf
-from dh_segment.loader import LoadedModel
 from tqdm import tqdm
 from glob import glob
 import numpy as np
 import os
 import cv2
 from imageio import imread, imsave
+from dh_segment.inference import LoadedModel
+
 
 
 def convert_image(img):

@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-import tensorflow as tf
-from dh_segment.loader import LoadedModel
-from dh_segment.post_processing import boxes_detection, binarization, PAGE
-from tqdm import tqdm
-from glob import glob
-import numpy as np
 import os
+from glob import glob
+
 import cv2
+import numpy as np
+import tensorflow as tf
 from imageio import imread, imsave
+from tqdm import tqdm
+
+from dh_segment.io import PAGE
+from dh_segment.inference import LoadedModel
+from dh_segment.post_processing import boxes_detection, binarization
 
 # To output results in PAGE XML format (http://www.primaresearch.org/schema/PAGE/gts/pagecontent/2013-07-15/)
 PAGE_XML_DIR = './page_xml'
@@ -23,7 +26,7 @@ def page_make_binary_mask(probs: np.ndarray, threshold: float=-1) -> np.ndarray:
     """
 
     mask = binarization.thresholding(probs, threshold)
-    mask = binarization.cleaning_binary(mask, size=5)
+    mask = binarization.cleaning_binary(mask, kernel_size=5)
     return mask
 
 
@@ -93,7 +96,7 @@ if __name__ == '__main__':
 
             # Create page region and XML file
             page_border = PAGE.Border(coords=PAGE.Point.cv2_to_point_list(pred_page_coords[:, None, :]))
-            page_xml = PAGE.Page(filename, image_width=original_shape[1], image_height=original_shape[0],
+            page_xml = PAGE.Page(image_filename=filename, image_width=original_shape[1], image_height=original_shape[0],
                                  page_border=page_border)
             xml_filename = os.path.join(output_pagexml_dir, '{}.xml'.format(basename))
             page_xml.write_to_file(xml_filename, creator_name='PageExtractor')
