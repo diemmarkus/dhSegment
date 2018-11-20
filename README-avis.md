@@ -59,6 +59,8 @@ python avis.py with D:\avis\configs\config-regions.json
 python split.py --train 0.33 --eval 0.33 E:\avis\18-11-imgs E:\avis\database
 python split.py --train 0.33 --eval 0.33 E:\avis\18-11-labels E:\avis\database
 ```
+- move all source `*.jpg` images into `images` (e.g. eval/images)
+- move all label `*.png` images into `labels` (e.g. eval/labels)
 
 ## train
 ```bash

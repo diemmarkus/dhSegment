@@ -1,12 +1,12 @@
 
-from dh_segment.post_processing.PAGE import Region, TextRegion, SeparatorRegion, Point
+from dh_segment.post_processing.PAGE import Region, TextRegion, SeparatorRegion, GraphicRegion, Point
 
 def download_images_using_csv(csvPath: str, outDir: str):
     import os
     from joblib import Parallel, delayed
     from tqdm import tqdm
 
-    from dh_segment.utils import download_image
+    from dh_segment.utils.misc import download_image
 
     if not csvPath:
         print('csv path is empty, please specify the path to a valid csv file')
@@ -59,7 +59,7 @@ def create_page_xmls(csvPath: str, outDir: str):
 
         # convert to PAGE TextRegions
         trs = [(lambda re: re.toTextRegion())(re)       for re in ca]
-        sps = [(lambda re: re.toSeparatorRegion())(re)  for re in ca]
+        sps = [(lambda re: re.toArticleMarker())(re)  for re in ca]
         lsps = [(lambda re: re.toLeftSeparatorRegion())(re) for re in ca]
 
         # load the image
@@ -155,6 +155,21 @@ class RegionEntry:
         cn.append(Point(p1.y+20, p1.x))
 
         return SeparatorRegion(self.region.id, cn)
+
+    def toArticleMarker(self):
+
+        if len(self.region.coords) < 4:
+            return GraphicRegion(self.region.id)
+
+        p1 = self.region.coords[0]
+
+        cn = list()
+        cn.append(Point(p1.y-20, p1.x-20))
+        cn.append(Point(p1.y-20, p1.x+400))
+        cn.append(Point(p1.y+80, p1.x+400))
+        cn.append(Point(p1.y+80, p1.x-20))
+
+        return GraphicRegion(self.region.id, cn)
 
     def toLeftSeparatorRegion(self):
 
